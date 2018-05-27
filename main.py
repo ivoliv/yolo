@@ -152,11 +152,11 @@ for epoch in range(local.num_epochs):
                         loss += weight * loss_function_BCEL(pred[im, class_start_idx + 0], target[im, class_start_idx + 0])
 
                         # Coordinates loss: (t_x, t_y) \in [0,1], BCEL
-                        #loss += loss_function_BCEL(pred[im, class_start_idx + 1], target[im, class_start_idx + 1])
-                        #loss += loss_function_BCEL(pred[im, class_start_idx + 2], target[im, class_start_idx + 2])
+                        loss += loss_function_BCEL(pred[im, class_start_idx + 1], target[im, class_start_idx + 1])
+                        loss += loss_function_BCEL(pred[im, class_start_idx + 2], target[im, class_start_idx + 2])
                         # Coordinates loss: (t_w, t_h) unconstrained, MSEL
-                        #loss += loss_function_MSEL(pred[im, class_start_idx + 3], target[im, class_start_idx + 3])
-                        #loss += loss_function_MSEL(pred[im, class_start_idx + 4], target[im, class_start_idx + 4])
+                        loss += loss_function_MSEL(pred[im, class_start_idx + 3], target[im, class_start_idx + 3])
+                        loss += loss_function_MSEL(pred[im, class_start_idx + 4], target[im, class_start_idx + 4])
 
                         # Class losses
                         # TODO: class losses
