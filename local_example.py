@@ -14,3 +14,6 @@ batch_size = 5
 batch_quit = 5  # at which batch sample number to move on to next epoch
 
 num_workers = 1
+
+display = False
+

@@ -147,8 +147,8 @@ for epoch in range(local.num_epochs):
                         if target[im, class_start_idx + 0] == 1:
                             weight = 1
                             # Class losses
-                            loss += coord_weight * loss_function_BCEL(pred[im, class_start_idx + 5: class_end_idx],
-                                                                      target[im, class_start_idx + 5: class_end_idx])
+                            loss += loss_function_BCEL(pred[im, class_start_idx + 5: class_end_idx],
+                                                       target[im, class_start_idx + 5: class_end_idx])
                         else:
                             weight = 0.5
 
@@ -239,9 +239,12 @@ def output_predict_vec():
                     print()
 
 def display_loss_history():
-    import matplotlib.pyplot as plt
-    plt.plot(loss_log)
-    plt.show()
+    if local.display:
+        import matplotlib.pyplot as plt
+        plt.plot(loss_log)
+        plt.show()
+    else:
+        print(loss_log)
 
 output_predict_vec()
 display_loss_history()
