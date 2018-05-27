@@ -13,8 +13,6 @@ import local
 path_jpeg = os.path.join(local.VOC_path, 'JPEGImages')
 path_annotations = os.path.join(local.VOC_path, 'Annotations')
 
-print('Images in', path_jpeg)
-
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -43,7 +41,12 @@ valid_loader = DataLoader(voc_dataset,
                           num_workers=local.num_workers)
 
 
-model = Yolov2Net(local.grid_size, voc_dataset.n_bnd_boxes, voc_dataset.n_classes).to(device)
+if os.path.isfile('model_state.pt'):
+    print('Found model_state.pt file, loading state...')
+    model = torch.load('model_state.pt')
+else:
+    model = Yolov2Net(local.grid_size, voc_dataset.n_bnd_boxes, voc_dataset.n_classes).to(device)
+
 
 #print(model)
 
@@ -53,7 +56,7 @@ loss_function_MSEL = torch.nn.MSELoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 # Decay LR by a factor of 0.1 every 5 epochs
-exp_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+exp_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
 
 # TODO: clean this all up
 # Create tensor sizes required for building the loss function
@@ -95,10 +98,11 @@ for epoch in range(local.num_epochs):
         print('[%d, %3d]' %
               (epoch + 1, i_batch + 1), end='')
 
-        model.zero_grad()
-
         x = torch.autograd.Variable(sample_batch['image'], requires_grad=True).to(device)
         #print('input size  =', x.size())
+
+        model.zero_grad()
+        
         print(' =>', end='')
         sys.stdout.flush()
         pred = model(x)
@@ -108,12 +112,6 @@ for epoch in range(local.num_epochs):
         target = target.to(device)
 
         batch_n_img = target.size()[0]
-
-        # For all images in batch:
-        #   Defines if an object appears in cell '(i,j)', attributed to bounding box 'b', attributed to class 'c'
-        appears = np.zeros((local.batch_size,
-                            voc_dataset.grid_size, voc_dataset.grid_size,
-                            voc_dataset.n_bnd_boxes, 1))
 
         objects_detected = []  # list of (cell(i,j), bnd_box) of objects detected in image
 
@@ -214,6 +212,7 @@ for epoch in range(local.num_epochs):
 
         #exit()
 
+torch.save(model, 'model_state.pt')
 
 def output_predict_vec():
 
