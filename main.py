@@ -146,20 +146,28 @@ for epoch in range(local.num_epochs):
                         # Objectness loss
                         if target[im, class_start_idx + 0] == 1:
                             weight = 1
+                            # Class losses
+                            loss += coord_weight * loss_function_BCEL(pred[im, class_start_idx + 5: class_end_idx],
+                                                                      target[im, class_start_idx + 5: class_end_idx])
                         else:
                             weight = 0.5
 
-                        loss += weight * loss_function_BCEL(pred[im, class_start_idx + 0], target[im, class_start_idx + 0])
+                        loss += weight * loss_function_BCEL(pred[im, class_start_idx + 0],
+                                                            target[im, class_start_idx + 0])
 
+                        coord_weight = 5
                         # Coordinates loss: (t_x, t_y) \in [0,1], BCEL
-                        loss += loss_function_BCEL(pred[im, class_start_idx + 1], target[im, class_start_idx + 1])
-                        loss += loss_function_BCEL(pred[im, class_start_idx + 2], target[im, class_start_idx + 2])
-                        # Coordinates loss: (t_w, t_h) unconstrained, MSEL
-                        loss += loss_function_MSEL(pred[im, class_start_idx + 3], target[im, class_start_idx + 3])
-                        loss += loss_function_MSEL(pred[im, class_start_idx + 4], target[im, class_start_idx + 4])
+                        loss += coord_weight * loss_function_BCEL(pred[im, class_start_idx + 1],
+                                                                  target[im, class_start_idx + 1])
+                        loss += coord_weight * loss_function_BCEL(pred[im, class_start_idx + 2],
+                                                                  target[im, class_start_idx + 2])
 
-                        # Class losses
-                        # TODO: class losses
+                        # Coordinates loss: (t_w, t_h) unconstrained, MSEL
+                        loss += coord_weight * loss_function_MSEL(pred[im, class_start_idx + 3],
+                                                                  target[im, class_start_idx + 3])
+                        loss += coord_weight * loss_function_MSEL(pred[im, class_start_idx + 4],
+                                                                  target[im, class_start_idx + 4])
+
 
         loss /= local.batch_size
 

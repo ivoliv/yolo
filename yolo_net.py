@@ -108,7 +108,7 @@ class Yolov2Net(nn.Module):
                     class_end_idx   = grid_id*self.cell_tensor_len + (b + 1) * (self.n_classes + 5)
                     #print((i, j, b), grid_id, class_start_idx, class_end_idx)
 
-                    # Apply sigmoid to: objectness, tx, ty
+                    # Apply sigmoid to: objectness, tx, ty - not to t_w, t_h
                     x[:, class_start_idx: class_start_idx+3] = torch.sigmoid(x[:, class_start_idx: class_start_idx+3])
                     # Apply sigmoid to all classes
                     x[:, class_start_idx+5: class_end_idx] = torch.sigmoid(x[:, class_start_idx+5: class_end_idx])
