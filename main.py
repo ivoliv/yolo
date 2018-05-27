@@ -125,8 +125,8 @@ for epoch in range(local.num_epochs):
                             #print(target[img, i, j, class_start_idx:(b+1)*(voc_dataset.n_classes+5)])
                             class_end_idx = (b+1)*(voc_dataset.n_classes+5)
                             class_id = np.argmax(target[img, i, j,
-                                                 class_start_idx+5: class_end_idx].numpy())
-                            coords = target[img, i, j, class_start_idx+1: class_start_idx+5].numpy()
+                                                 class_start_idx+5: class_end_idx].cpu().numpy())
+                            coords = target[img, i, j, class_start_idx+1: class_start_idx+5].cpu().numpy()
                             objects_detected.append(((i,j), b))
                             #print(' cell={}, bb={}, class_id={}, coords={}'.format((i, j), b, class_id, coords))
 
@@ -222,8 +222,8 @@ def output_predict_vec():
                 class_end_idx = grid_id * cell_tensor_len + (b + 1) * (voc_dataset.n_classes + 5)
 
                 print((i, j),
-                      pred[0, class_start_idx + 0].detach().numpy(),
-                      target[0, class_start_idx + 0].detach().numpy(), end='')
+                      pred[0, class_start_idx + 0].detach().cpu().numpy(),
+                      target[0, class_start_idx + 0].detach().cpu().numpy(), end='')
                 if target[0, class_start_idx + 0] > 0:
                     print(' *****')
                 else:
@@ -231,9 +231,9 @@ def output_predict_vec():
 
     for im in range(min(target.size()[0], 5)):
         for i in range(pred.size()[1]):
-            if target[im, i].detach().numpy() > 0:
-                print(im, i, pred[im, i].detach().numpy(), target[im, i].detach().numpy(), end='')
-                if target[im, i].detach().numpy() == 1:
+            if target[im, i].detach().cpu().numpy() > 0:
+                print(im, i, pred[im, i].detach().cpu().numpy(), target[im, i].detach().cpu().numpy(), end='')
+                if target[im, i].detach().cpu().numpy() == 1:
                     print(' <{}'.format('-'*50))
                 else:
                     print()
