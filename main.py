@@ -52,6 +52,9 @@ loss_function_BCEL = torch.nn.BCELoss()
 loss_function_MSEL = torch.nn.MSELoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
+# Decay LR by a factor of 0.1 every 5 epochs
+exp_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+
 # TODO: clean this all up
 # Create tensor sizes required for building the loss function
 n_b = 5 + voc_dataset.n_classes
