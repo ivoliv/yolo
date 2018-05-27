@@ -7,45 +7,43 @@ from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from yolo_dataloaders import VOCDataset
 import sys
+import os
+import local
 
-path_jpeg = '/Users/ivoliv/Images/VOC/VOCdevkit/VOC2012/JPEGImages'
-path_annotations = '/Users/ivoliv/Images/VOC/VOCdevkit/VOC2012/Annotations'
-scaled_img_size = 224
-grid_size = 7
-train_ratio = 0.8
-num_epochs = 10
-batch_size = 50
-batch_quit = 5  # at which batch sample number to move on to next epoch
+path_jpeg = os.path.join(local.VOC_path, 'JPEGImages')
+path_annotations = os.path.join(local.VOC_path, 'Annotations')
+
+print('Images in', path_jpeg)
 
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 voc_dataset = VOCDataset(path_jpg=path_jpeg,
                          path_xml=path_annotations,
-                         grid_size=grid_size,
-                         output_size=scaled_img_size)
+                         grid_size=local.grid_size,
+                         output_size=local.scaled_img_size)
 
 n_images = len(voc_dataset)
 indices = list(range(n_images))
 
-split_train = int(np.floor(train_ratio * n_images))
+split_train = int(np.floor(local.train_ratio * n_images))
 split_valid = n_images - split_train
 train_idx, valid_idx = indices[:split_train], indices[split_train:]
 train_sampler = SubsetRandomSampler(train_idx)
 valid_sampler = SubsetRandomSampler(valid_idx)
 
 train_loader = DataLoader(voc_dataset,
-                          batch_size=batch_size,
+                          batch_size=local.batch_size,
                           sampler=train_sampler,
-                          num_workers=1)
+                          num_workers=local.num_workers)
 
 valid_loader = DataLoader(voc_dataset,
-                          batch_size=batch_size,
+                          batch_size=local.batch_size,
                           sampler=valid_sampler,
-                          num_workers=1)
+                          num_workers=local.num_workers)
 
 
-model = Yolov2Net(grid_size, voc_dataset.n_bnd_boxes, voc_dataset.n_classes).to(device)
+model = Yolov2Net(local.grid_size, voc_dataset.n_bnd_boxes, voc_dataset.n_classes).to(device)
 
 #print(model)
 
@@ -61,8 +59,8 @@ n_ij = voc_dataset.n_bnd_boxes * n_b
 obj_pred_idx = []
 class_pred_idx = []
 idx = 0
-for i in range(grid_size):
-    for j in range(grid_size):
+for i in range(local.grid_size):
+    for j in range(local.grid_size):
         for b in range(voc_dataset.n_bnd_boxes):
             obj_pred_idx.append(idx)
             for l in range(idx + 5, idx + n_b):
@@ -74,11 +72,11 @@ print('\nrunning on: {}\n'.format(device))
 loss_log = []
 
 start_time = time.time()
-total_batches = (num_epochs+1) * batch_quit
+total_batches = (local.num_epochs+1) * local.batch_quit
 total_time_estimate = None
 time_remaining = None
 
-for epoch in range(num_epochs):
+for epoch in range(local.num_epochs):
 
     model.train()
 
@@ -88,7 +86,7 @@ for epoch in range(num_epochs):
 
         batch_start = time.time()
 
-        if batch_quit and i_batch+1 > batch_quit:
+        if local.batch_quit and i_batch+1 > local.batch_quit:
             break
 
         print('[%d, %3d]' %
@@ -110,7 +108,7 @@ for epoch in range(num_epochs):
 
         # For all images in batch:
         #   Defines if an object appears in cell '(i,j)', attributed to bounding box 'b', attributed to class 'c'
-        appears = np.zeros((batch_size,
+        appears = np.zeros((local.batch_size,
                             voc_dataset.grid_size, voc_dataset.grid_size,
                             voc_dataset.n_bnd_boxes, 1))
 
@@ -163,7 +161,7 @@ for epoch in range(num_epochs):
                         # Class losses
                         # TODO: class losses
 
-        loss /= batch_size
+        loss /= local.batch_size
 
 
 
@@ -175,7 +173,7 @@ for epoch in range(num_epochs):
         loss.backward()
 
         batch_end = time.time()
-        batch_time = (batch_end - batch_start)
+        batch_time = batch_end - batch_start
         time_sofar = batch_end - start_time
         if total_time_estimate:
             w = .1
@@ -185,7 +183,6 @@ for epoch in range(num_epochs):
 
         time_remaining = max(0, (total_time_estimate - time_sofar) / 60)
 
-        time_remaining = max(0, (total_time_estimate - time_sofar) / 60)
         print(' %.0f s' % batch_time, '(%.2f m est remaining)' % time_remaining)
         sys.stdout.flush()
 
@@ -193,13 +190,13 @@ for epoch in range(num_epochs):
 
         epoch_loss += loss.item()
 
-        if batch_quit == 0:
+        if local.batch_quit == 0:
             if i_batch == 0:
                 loss_log.append(epoch_loss)
                 epoch_loss = 0
 
-        if i_batch+1 == batch_quit:
-            loss_log.append(epoch_loss / batch_quit)
+        if i_batch+1 == local.batch_quit:
+            loss_log.append(epoch_loss / local.batch_quit)
             epoch_loss = 0
 
         best_model_weights = copy.deepcopy(model.state_dict())
