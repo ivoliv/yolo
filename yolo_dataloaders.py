@@ -144,7 +144,7 @@ class VOCDataset(Dataset):
                         obj_w = obj[1][2][0] / self.grid_size
                         obj_h = obj[1][2][1] / self.grid_size
 
-                        max_IOU_idx = 0
+                        max_IOU_idx = None
                         max_IOU = 0
                         boxA = (obj_center_x, obj_center_y, obj_w, obj_h)
                         for p in cell_avail_priors:
@@ -160,7 +160,7 @@ class VOCDataset(Dataset):
                         #print('>> max_IOU_idx =', max_IOU_idx)
                         #print(cell_avail_priors)
                         # TODO: shouldn't have to check this here because of check at bottom of loop
-                        if len(cell_avail_priors) > 0:
+                        if max_IOU_idx and len(cell_avail_priors) > 0:
                             selected_prior = cell_avail_priors.pop(max_IOU_idx)
                         else:
                             break
