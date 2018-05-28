@@ -235,6 +235,7 @@ def output_predict_vec():
     for i in range(voc_dataset.grid_size):
         for j in range(voc_dataset.grid_size):
             grid_id = i * voc_dataset.grid_size + j
+            print()
             for b in range(voc_dataset.n_bnd_boxes):
                 class_start_idx = grid_id * cell_tensor_len + (b) * (voc_dataset.n_classes + 5)
                 class_end_idx = grid_id * cell_tensor_len + (b + 1) * (voc_dataset.n_classes + 5)
