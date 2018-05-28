@@ -47,6 +47,7 @@ if os.path.isfile('model_state.pt'):
 else:
     model = Yolov2Net(local.grid_size, voc_dataset.n_bnd_boxes, voc_dataset.n_classes).to(device)
 
+best_model_weights = copy.deepcopy(model.state_dict())
 
 #print(model)
 
@@ -89,6 +90,8 @@ for epoch in range(local.num_epochs):
     model.train()
 
     epoch_loss = 0
+
+    model.load_state_dict(best_model_weights)
 
     for i_batch, sample_batch in enumerate(train_loader):
 
