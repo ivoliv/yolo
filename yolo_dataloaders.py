@@ -159,7 +159,11 @@ class VOCDataset(Dataset):
 
                         #print('>> max_IOU_idx =', max_IOU_idx)
                         #print(cell_avail_priors)
-                        selected_prior = cell_avail_priors.pop(max_IOU_idx)
+                        # TODO: shouldn't have to check this here because of check at bottom of loop
+                        if len(cell_avail_priors) > 0:
+                            selected_prior = cell_avail_priors.pop(max_IOU_idx)
+                        else:
+                            break
 
                         offset = max_IOU_idx * (5 + self.n_classes)
 

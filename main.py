@@ -53,7 +53,7 @@ else:
 loss_function_CEL = torch.nn.CrossEntropyLoss()
 loss_function_BCEL = torch.nn.BCELoss()
 loss_function_MSEL = torch.nn.MSELoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+optimizer = torch.optim.SGD(model.parameters(), lr=local.lr, momentum=0.9)
 
 # Decay LR by a factor of 0.1 every 5 epochs
 exp_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
@@ -190,7 +190,7 @@ for epoch in range(local.num_epochs):
         print(' <=', end='')
         sys.stdout.flush()
         loss.backward()
-        
+
 
         batch_end = time.time()
         batch_time = batch_end - batch_start
