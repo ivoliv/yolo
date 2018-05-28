@@ -137,39 +137,42 @@ for epoch in range(local.num_epochs):
         #print('target / pred size =', target.size(), pred.size())
 
         loss = 0
+        coord_weight = 5
         cell_tensor_len = voc_dataset.n_bnd_boxes * (5 + voc_dataset.n_classes)
         for im in range(target.size()[0]):
             for i in range(voc_dataset.grid_size):
                 for j in range(voc_dataset.grid_size):
                     grid_id = i * voc_dataset.grid_size + j
                     for b in range(voc_dataset.n_bnd_boxes):
-                        class_start_idx = grid_id * cell_tensor_len + (b) * (voc_dataset.n_classes + 5)
+                        class_start_idx = grid_id * cell_tensor_len + b * (voc_dataset.n_classes + 5)
                         class_end_idx = grid_id * cell_tensor_len + (b + 1) * (voc_dataset.n_classes + 5)
 
-                        # Objectness loss
                         if target[im, class_start_idx + 0] == 1:
-                            weight = 1
+                            obj_weight = 1
+
                             # Class losses
                             loss += loss_function_BCEL(pred[im, class_start_idx + 5: class_end_idx],
                                                        target[im, class_start_idx + 5: class_end_idx])
+
+                            # Coordinates loss: (t_x, t_y) \in [0,1], BCEL
+                            loss += coord_weight * loss_function_BCEL(pred[im, class_start_idx + 1],
+                                                                      target[im, class_start_idx + 1])
+                            loss += coord_weight * loss_function_BCEL(pred[im, class_start_idx + 2],
+                                                                      target[im, class_start_idx + 2])
+
+                            # Coordinates loss: (t_w, t_h) unconstrained, MSEL
+                            loss += coord_weight * loss_function_MSEL(pred[im, class_start_idx + 3],
+                                                                      target[im, class_start_idx + 3])
+                            loss += coord_weight * loss_function_MSEL(pred[im, class_start_idx + 4],
+                                                                      target[im, class_start_idx + 4])
                         else:
-                            weight = 0.5
+                            obj_weight = 0.5
 
-                        loss += weight * loss_function_BCEL(pred[im, class_start_idx + 0],
-                                                            target[im, class_start_idx + 0])
+                        # Objectness loss
+                        loss += obj_weight * loss_function_BCEL(pred[im, class_start_idx + 0],
+                                                                target[im, class_start_idx + 0])
 
-                        coord_weight = 5
-                        # Coordinates loss: (t_x, t_y) \in [0,1], BCEL
-                        loss += coord_weight * loss_function_BCEL(pred[im, class_start_idx + 1],
-                                                                  target[im, class_start_idx + 1])
-                        loss += coord_weight * loss_function_BCEL(pred[im, class_start_idx + 2],
-                                                                  target[im, class_start_idx + 2])
 
-                        # Coordinates loss: (t_w, t_h) unconstrained, MSEL
-                        loss += coord_weight * loss_function_MSEL(pred[im, class_start_idx + 3],
-                                                                  target[im, class_start_idx + 3])
-                        loss += coord_weight * loss_function_MSEL(pred[im, class_start_idx + 4],
-                                                                  target[im, class_start_idx + 4])
 
 
         loss /= local.batch_size
