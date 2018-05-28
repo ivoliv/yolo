@@ -43,7 +43,7 @@ valid_loader = DataLoader(voc_dataset,
 
 if os.path.isfile('model_state.pt'):
     print('Found model_state.pt file, loading state...')
-    model = torch.load('model_state.pt')
+    model = torch.load('model_state.pt').to(device)
 else:
     model = Yolov2Net(local.grid_size, voc_dataset.n_bnd_boxes, voc_dataset.n_classes).to(device)
 
@@ -82,6 +82,8 @@ total_batches = (local.num_epochs+1) * local.batch_quit
 total_time_estimate = None
 time_remaining = None
 
+best_loss = None
+
 for epoch in range(local.num_epochs):
 
     model.train()
@@ -102,7 +104,7 @@ for epoch in range(local.num_epochs):
         #print('input size  =', x.size())
 
         model.zero_grad()
-        
+
         print(' =>', end='')
         sys.stdout.flush()
         pred = model(x)
@@ -177,6 +179,14 @@ for epoch in range(local.num_epochs):
         print(' loss: %.3f' % loss.item(), end='')
         sys.stdout.flush()
 
+        if not best_loss or loss.item() < best_loss:
+            best_loss = loss.item()
+            best_model_weights = copy.deepcopy(model.state_dict())
+            torch.save(model, 'model_state.pt')
+            print('*', end='')
+        else:
+            print(' ', end='')
+
         print(' <=', end='')
         sys.stdout.flush()
         loss.backward()
@@ -208,10 +218,9 @@ for epoch in range(local.num_epochs):
             loss_log.append(epoch_loss / local.batch_quit)
             epoch_loss = 0
 
-        best_model_weights = copy.deepcopy(model.state_dict())
-
         #exit()
 
+model.load_state_dict(best_model_weights)
 torch.save(model, 'model_state.pt')
 
 def output_predict_vec():
