@@ -190,6 +190,7 @@ for epoch in range(local.num_epochs):
         print(' <=', end='')
         sys.stdout.flush()
         loss.backward()
+        
 
         batch_end = time.time()
         batch_time = batch_end - batch_start
