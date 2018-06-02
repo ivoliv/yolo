@@ -111,7 +111,8 @@ class Yolov2Net(nn.Module):
                     # Apply sigmoid to: objectness, tx, ty - not to t_w, t_h
                     x[:, class_start_idx: class_start_idx+3] = torch.sigmoid(x[:, class_start_idx: class_start_idx+3])
                     # Apply sigmoid to all classes
-                    x[:, class_start_idx+5: class_end_idx] = torch.sigmoid(x[:, class_start_idx+5: class_end_idx])
+                    #TODO: class CEL: Decide if to keep this:
+                    #x[:, class_start_idx+5: class_end_idx] = torch.sigmoid(x[:, class_start_idx+5: class_end_idx])
 
         return x
 

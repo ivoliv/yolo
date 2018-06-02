@@ -56,6 +56,8 @@ loss_function_BCEL = torch.nn.BCELoss()
 loss_function_MSEL = torch.nn.MSELoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=local.lr, momentum=0.9)
 
+optimizer = torch.optim.Adam(model.parameters(), lr=local.lr, amsgrad=True)
+
 # Decay LR by a factor of 0.1 every 5 epochs
 exp_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
 
@@ -150,12 +152,18 @@ for epoch in range(local.num_epochs):
                         class_start_idx = grid_id * cell_tensor_len + b * (voc_dataset.n_classes + 5)
                         class_end_idx = grid_id * cell_tensor_len + (b + 1) * (voc_dataset.n_classes + 5)
 
-                        if target[im, class_start_idx + 0] == 1:
+                        if target[im, class_start_idx] == 1:
                             obj_weight = 1
 
                             # Class losses
-                            loss += loss_function_BCEL(pred[im, class_start_idx + 5: class_end_idx],
-                                                       target[im, class_start_idx + 5: class_end_idx])
+                            # TODO: class CEL: Decide if to keep this:
+                            #loss += loss_function_BCEL(pred[im, class_start_idx + 5: class_end_idx],
+                            #                           target[im, class_start_idx + 5: class_end_idx])
+                            _, targ_class = torch.max(target[im, class_start_idx + 5: class_end_idx].view(-1), 0)
+                            #print(pred[im, class_start_idx + 5: class_end_idx].view(1,-1).shape)
+                            #print(targ_class.view(1).shape)
+                            loss += loss_function_CEL(pred[im, class_start_idx + 5: class_end_idx].view(1,-1),
+                                                      targ_class.view(1))
 
                             # Coordinates loss: (t_x, t_y) \in [0,1], BCEL
                             loss += coord_weight * loss_function_BCEL(pred[im, class_start_idx + 1],
@@ -174,9 +182,6 @@ for epoch in range(local.num_epochs):
                         # Objectness loss
                         loss += obj_weight * loss_function_BCEL(pred[im, class_start_idx + 0],
                                                                 target[im, class_start_idx + 0])
-
-
-
 
         loss /= local.batch_size
 
@@ -240,11 +245,15 @@ def output_predict_vec():
                 class_start_idx = grid_id * cell_tensor_len + (b) * (voc_dataset.n_classes + 5)
                 class_end_idx = grid_id * cell_tensor_len + (b + 1) * (voc_dataset.n_classes + 5)
 
+                _, pred_class = torch.max(pred[0, class_start_idx + 5: class_end_idx].view(-1), 0)
+                _, targ_class = torch.max(target[0, class_start_idx + 5: class_end_idx].view(-1), 0)
+
                 print((i, j),
                       pred[0, class_start_idx + 0].detach().cpu().numpy(),
                       target[0, class_start_idx + 0].detach().cpu().numpy(), end='')
                 if target[0, class_start_idx + 0] > 0:
-                    print(' *****')
+                    print(' ***** target class: {}, pred class: {}'
+                          .format(targ_class.cpu().numpy(), pred_class.cpu().numpy()))
                 else:
                     print()
 
