@@ -56,7 +56,7 @@ loss_function_BCEL = torch.nn.BCELoss()
 loss_function_MSEL = torch.nn.MSELoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=local.lr, momentum=0.9)
 
-optimizer = torch.optim.Adam(model.parameters(), lr=local.lr, amsgrad=True)
+#optimizer = torch.optim.Adam(model.parameters(), lr=local.lr, amsgrad=True)
 
 # Decay LR by a factor of 0.1 every 5 epochs
 exp_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
@@ -121,22 +121,6 @@ for epoch in range(local.num_epochs):
         batch_n_img = target.size()[0]
 
         objects_detected = []  # list of (cell(i,j), bnd_box) of objects detected in image
-
-        for img in range(batch_n_img):
-            #yolo_utils.visualize_with_boxes(sample_batch, voc_dataset, show_ix=img, orig_file=True)
-            #print('\n', '#'*30)
-            for i in range(voc_dataset.grid_size):
-                for j in range(voc_dataset.grid_size):
-                    for b in range(voc_dataset.n_bnd_boxes):
-                        class_start_idx = b * (voc_dataset.n_classes + 5)
-                        if target[img, i, j, class_start_idx] > 0:
-                            #print(target[img, i, j, class_start_idx:(b+1)*(voc_dataset.n_classes+5)])
-                            class_end_idx = (b+1)*(voc_dataset.n_classes+5)
-                            class_id = np.argmax(target[img, i, j,
-                                                 class_start_idx+5: class_end_idx].cpu().numpy())
-                            coords = target[img, i, j, class_start_idx+1: class_start_idx+5].cpu().numpy()
-                            objects_detected.append(((i,j), b))
-                            #print(' cell={}, bb={}, class_id={}, coords={}'.format((i, j), b, class_id, coords))
 
         target = target.view(pred.size())
         #print('target / pred size =', target.size(), pred.size())
@@ -259,7 +243,7 @@ def output_predict_vec():
 
     for im in range(min(target.size()[0], 5)):
         for i in range(pred.size()[1]):
-            if target[im, i].detach().cpu().numpy() > 0:
+            if abs(target[im, i].detach().cpu().numpy()) > 0.001:
                 print(im, i, pred[im, i].detach().cpu().numpy(), target[im, i].detach().cpu().numpy(), end='')
                 if target[im, i].detach().cpu().numpy() == 1:
                     print(' <{}'.format('-'*50))

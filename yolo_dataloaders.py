@@ -2,6 +2,7 @@ import os
 from PIL import Image
 import xml.etree.ElementTree as ET
 import torch
+import sys
 from torch.utils.data import Dataset
 from torchvision import transforms
 import random
@@ -48,6 +49,8 @@ class VOCDataset(Dataset):
                                   2: (6.63, 11.38),
                                   3: (9.42, 5.11),
                                   4: (16.62, 10.52)}
+            # TEMP:
+            #self.anchor_priors = {0: (16.62, 10.52)}
             self.n_bnd_boxes = len(self.anchor_priors)
 
             # TODO: automate this part
@@ -160,7 +163,7 @@ class VOCDataset(Dataset):
                         #print('>> max_IOU_idx =', max_IOU_idx)
                         #print(cell_avail_priors)
                         # TODO: shouldn't have to check this here because of check at bottom of loop
-                        if max_IOU_idx and len(cell_avail_priors) > 0:
+                        if len(cell_avail_priors) > 0:
                             selected_prior = cell_avail_priors.pop(max_IOU_idx)
                         else:
                             break
