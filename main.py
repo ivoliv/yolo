@@ -109,7 +109,7 @@ for epoch in range(local.num_epochs):
         objects_detected = []  # list of (cell(i,j), bnd_box) of objects detected in image
 
         target = target.view(pred.size())
-        #print('target / pred size =', target.size(), pred.size())
+        # print('target / pred size =', target.size(), pred.size())
 
         loss = 0
         coord_weight = 5
