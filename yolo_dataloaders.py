@@ -168,7 +168,7 @@ class VOCDataset(Dataset):
                         else:
                             print('max_IOU_idx =', max_IOU_idx)
                             print('cell_avail_priors =', cell_avail_priors)
-                            break
+                            continue
 
                         offset = max_IOU_idx * (5 + self.n_classes)
 
