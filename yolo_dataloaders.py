@@ -166,13 +166,15 @@ class VOCDataset(Dataset):
                         if not (max_IOU_idx == None) and len(cell_avail_priors) > 0:
                             selected_prior = cell_avail_priors.pop(max_IOU_idx)
                         else:
+                            print('image name:', name)
+                            print('boxA =', boxA)
                             print('max_IOU_idx =', max_IOU_idx)
                             print('cell_avail_priors =', cell_avail_priors)
                             for p in cell_avail_priors:
                                 boxB = (obj_center_x, obj_center_y,
                                         self.anchor_priors[p][0], self.anchor_priors[p][1])
                                 IOU = yolo_utils.different_center_IOU(boxA, boxB)
-                                print('prior {} IOU = {}'.format(p, IOU))
+                                print('prior {}, IOU = {}, boxB = {}'.format(p, IOU, boxB))
                             continue
 
                         offset = max_IOU_idx * (5 + self.n_classes)
