@@ -255,8 +255,8 @@ def display_loss_history():
         import matplotlib.pyplot as plt
         plt.plot(loss_log)
         plt.show()
-    else:
-        print(loss_log)
+
+    print(loss_log)
 
 output_predict_vec()
 display_loss_history()

@@ -164,7 +164,11 @@ class VOCDataset(Dataset):
                         #print(cell_avail_priors)
                         # TODO: shouldn't have to check this here because of check at bottom of loop
                         if len(cell_avail_priors) > 0:
-                            selected_prior = cell_avail_priors.pop(max_IOU_idx)
+                            try:
+                                selected_prior = cell_avail_priors.pop(max_IOU_idx)
+                            except:
+                                print('\nException caused in pop! cell_avail_priors = ', cell_avail_priors)
+                                break
                         else:
                             break
 
