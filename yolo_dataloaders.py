@@ -168,6 +168,11 @@ class VOCDataset(Dataset):
                         else:
                             print('max_IOU_idx =', max_IOU_idx)
                             print('cell_avail_priors =', cell_avail_priors)
+                            for p in cell_avail_priors:
+                                boxB = (obj_center_x, obj_center_y,
+                                        self.anchor_priors[p][0], self.anchor_priors[p][1])
+                                IOU = yolo_utils.different_center_IOU(boxA, boxB)
+                                print('prior {} IOU = {}'.format(p, IOU))
                             continue
 
                         offset = max_IOU_idx * (5 + self.n_classes)
