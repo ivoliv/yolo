@@ -160,8 +160,7 @@ class tinyYolov2Net(nn.Module):
         self.layers7 = nn.Sequential(
             ConvBatchLeaky(512, 1024, kernel_size=3, stride=1, padding=1),
             ConvBatchLeaky(1024, 1024, kernel_size=3, stride=1, padding=1),
-
-            ConvBatchLeaky(1024, 225, kernel_size=1, stride=1, padding=1),
+            ConvBatchLeaky(1024, 225, kernel_size=1, stride=1, padding=0),
             nn.AvgPool2d(kernel_size=grid_size),
         )
 
