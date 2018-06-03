@@ -160,12 +160,12 @@ class tinyYolov2Net(nn.Module):
         self.layers7 = nn.Sequential(
             ConvBatchLeaky(512, 1024, kernel_size=3, stride=1, padding=1),
 
-            ConvBatchLeaky(1024, 125, kernel_size=1, stride=1, padding=1),
+            ConvBatchLeaky(1024, 225, kernel_size=1, stride=1, padding=1),
             nn.AvgPool2d(kernel_size=grid_size),
         )
 
         self.classification = nn.Sequential(
-            nn.Linear(125,
+            nn.Linear(225,
                       grid_size * grid_size * (n_bnd_boxes * (n_classes + 5))),
             #nn.ReLU()  <== I don't think I'm supposed to use a relu here!
         )
