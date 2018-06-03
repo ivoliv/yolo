@@ -13,8 +13,7 @@ class VOCDataset(Dataset):
     """
     Dataset for VOC inputs
     """
-    def __init__(self, path_jpg, path_xml, output_size=448,
-                 grid_size=7):
+    def __init__(self, path_jpg, path_xml, output_size=416):
         """
         Set up to read in VOC 2012 format image and annotation data. Also read in all
         annotation (xml) data - image (jpg) data is ready in __getitem__().
@@ -27,11 +26,11 @@ class VOCDataset(Dataset):
         try:
             assert(os.path.isdir(path_jpg))
             assert(os.path.isdir(path_xml))
+            self.cell_size = 32  # 32 is the 'stride' of the entire yolov2 network
             self.path_jpg = path_jpg
             self.path_xml = path_xml
             self.output_size = output_size
-            self.grid_size = grid_size
-            self.cell_size = output_size // grid_size
+            self.grid_size = output_size // self.cell_size
 
             all_xml_files = os.listdir(self.path_xml)
             print('Images in {}, total number in set: {}'.format(
@@ -160,7 +159,9 @@ class VOCDataset(Dataset):
                             #print('prior {} IOU = {}'.format(p, IOU))
                             #sys.stdout.flush()
 
-                        #print('>> max_IOU_idx =', max_IOU_idx)
+                        if max_IOU < .5:
+                            continue
+                        #print('>> max_IOU_idx =', max_IOU_idx, max_IOU)
                         #print(cell_avail_priors)
                         # TODO: shouldn't have to check this here because of check at bottom of loop
                         if not (max_IOU_idx == None) and len(cell_avail_priors) > 0:

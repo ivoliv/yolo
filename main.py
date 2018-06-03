@@ -1,6 +1,6 @@
 import numpy as np
 import time
-from yolo_net import Yolov2Net
+from yolo_net import Yolov2Net, tinyYolov2Net
 import copy
 import torch
 from torch.utils.data import DataLoader
@@ -18,7 +18,6 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 voc_dataset = VOCDataset(path_jpg=path_jpeg,
                          path_xml=path_annotations,
-                         grid_size=local.grid_size,
                          output_size=local.scaled_img_size)
 
 n_images = len(voc_dataset)
@@ -45,7 +44,7 @@ if os.path.isfile('model_state.pt'):
     print('Found model_state.pt file, loading state...')
     model = torch.load('model_state.pt').to(device)
 else:
-    model = Yolov2Net(local.grid_size, voc_dataset.n_bnd_boxes, voc_dataset.n_classes).to(device)
+    model = tinyYolov2Net(voc_dataset.grid_size, voc_dataset.n_bnd_boxes, voc_dataset.n_classes).to(device)
 
 best_model_weights = copy.deepcopy(model.state_dict())
 
@@ -61,20 +60,7 @@ optimizer = torch.optim.SGD(model.parameters(), lr=local.lr, momentum=0.9)
 # Decay LR by a factor of 0.1 every 5 epochs
 exp_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
 
-# TODO: clean this all up
-# Create tensor sizes required for building the loss function
-n_b = 5 + voc_dataset.n_classes
-n_ij = voc_dataset.n_bnd_boxes * n_b
-obj_pred_idx = []
-class_pred_idx = []
-idx = 0
-for i in range(local.grid_size):
-    for j in range(local.grid_size):
-        for b in range(voc_dataset.n_bnd_boxes):
-            obj_pred_idx.append(idx)
-            for l in range(idx + 5, idx + n_b):
-                class_pred_idx.append(l)
-            idx += n_b
+
 
 print('\nrunning on: {}\n'.format(device))
 
